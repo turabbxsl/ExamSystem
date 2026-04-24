@@ -1,0 +1,389 @@
+﻿@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Dərslər";
+}
+
+<div class="container-fluid" id="model" v-cloak>
+    <div class="row">
+
+        <div class="col-lg-12">
+            <div class="page-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">@ViewData["Title"]</h5>
+                <button class="btn btn-sm btn-success" v-on:click="openCreate">
+                    <i class="fa-solid fa-plus fa-fw"></i> Əlavə et
+                </button>
+            </div>
+        </div>
+
+        <div class="col-lg-12 mt-3">
+            <div id="coursesGrid"></div>
+        </div>
+
+    </div>
+
+    <!-- Create -->
+    <div class="modal fade" id="createModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Dərs əlavə et</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+
+                    <div class="mb-2">
+                        <label class="form-label">Dərsin kodu</label>
+                        <input class="form-control" maxlength="3" v-model="createForm.courseCode" />
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label">Dərsin adı</label>
+                        <input class="form-control" maxlength="30" v-model="createForm.courseName" />
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label">Sinifi</label>
+                        <input type="number" class="form-control" v-model.number="createForm.gradeLevel" min="1" max="11" />
+                    </div>
+
+                    <div class="row">
+                        <div class="col">
+                            <label class="form-label">Müəllim adı</label>
+                            <input class="form-control" maxlength="20" v-model="createForm.teacherFirstName" />
+                        </div>
+                        <div class="col">
+                            <label class="form-label">Müəllim soyadı</label>
+                            <input class="form-control" maxlength="20" v-model="createForm.teacherLastName" />
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Ləğv et</button>
+                    <button type="button" class="btn btn-sm btn-success" v-on:click="submitCreate" :disabled="loading">
+                        <span v-if="loading" class="spinner-border spinner-border-sm me-1"></span>
+                        Yadda saxla
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit -->
+    <div class="modal fade" id="editModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Dərsi redaktə et</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+
+                    <input type="hidden" v-model="editForm.id" />
+
+                    <div class="mb-2">
+                        <label class="form-label">Dərsin kodu</label>
+                        <input class="form-control" v-model="editForm.courseCode" disabled />
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label">Dərsin adı</label>
+                        <input class="form-control" maxlength="30" v-model="editForm.courseName" />
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label">Sinifi</label>
+                        <input type="number" class="form-control" v-model.number="editForm.gradeLevel" min="1" max="11" />
+                    </div>
+
+                    <div class="row">
+                        <div class="col">
+                            <label class="form-label">Müəllim adı</label>
+                            <input class="form-control" maxlength="20" v-model="editForm.teacherFirstName" />
+                        </div>
+                        <div class="col">
+                            <label class="form-label">Müəllim soyadı</label>
+                            <input class="form-control" maxlength="20" v-model="editForm.teacherLastName" />
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Ləğv et</button>
+                    <button type="button" class="btn btn-sm btn-primary" v-on:click="submitEdit" :disabled="loading">
+                        <span v-if="loading" class="spinner-border spinner-border-sm me-1"></span>
+                        Yenilə
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content">
+
+                <div class="modal-header border-0">
+                    <h5 class="text-danger">Silinsin?</h5>
+                </div>
+
+                <div class="modal-body">
+                    <b>{{ deleteTarget.courseName }}</b> silinəcək.
+                </div>
+
+                <div class="modal-footer border-0">
+                    <button class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Xeyr</button>
+                    <button class="btn btn-sm btn-danger" v-on:click="submitDelete" :disabled="loading">
+                        Bəli
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script>
+        let createModalInst, editModalInst, deleteModalInst;
+
+        var Model = new Vue({
+            el: '#model',
+            data: {
+                loading: false,
+
+                courses: [],
+
+                createForm: {
+                    courseCode: '',
+                    courseName: '',
+                    gradeLevel: null,
+                    teacherFirstName: '',
+                    teacherLastName: ''
+                },
+
+                editForm: {
+                    id: null,
+                    courseCode: '',
+                    courseName: '',
+                    gradeLevel: null,
+                    teacherFirstName: '',
+                    teacherLastName: ''
+                },
+
+                deleteTarget: {
+                    id: null,
+                    courseName: ''
+                }
+            },
+
+            mounted() {
+                createModalInst = new bootstrap.Modal(document.getElementById('createModal'));
+                editModalInst = new bootstrap.Modal(document.getElementById('editModal'));
+                deleteModalInst = new bootstrap.Modal(document.getElementById('deleteModal'));
+
+                this.loadGrid();
+            },
+
+            methods: {
+
+                async loadGrid() {
+                    const r = await axios.get('@Url.Action("GetCoursesJson", "Course")');
+
+                    console.log(r.data);
+
+                    if (!r.data.isSuccess) {
+                        r.data.errors.forEach(e => notify('error', e));
+                        return;
+                    }
+
+                    this.courses = r.data.data.value.courses;
+
+
+                    $('#coursesGrid').dxDataGrid({
+                        dataSource: this.courses,
+                        keyExpr: 'id',
+                        ppaging: { pageSize: 15 },
+                        loadPanel: { enabled: true },
+                        allowColumnResizing: true,
+                        allowColumnReordering: true,
+                        columnAutoWidth: true,
+                        columnResizingMode: 'widget',
+                        hoverStateEnabled: true,
+                        rowAlternationEnabled: true,
+                        pager: {
+                            showPageSizeSelector: true,
+                            allowedPageSizes: [10, 25, 50, 100]
+                        },
+                        filterRow: { visible: true, applyFilter: 'auto' },
+                        headerFilter: { visible: true },
+                        noDataText: 'Məlumat yoxdur',
+                        showBorders: true,
+                        width: '100%',
+                        columns: [
+                            { dataField: 'courseCode', caption: 'Kod', width: 80 },
+                            { dataField: 'courseName', caption: 'Dərs adı' },
+                            { dataField: 'gradeLevel', caption: 'Sinif', width: 80 },
+                            { dataField: 'teacherFullName', caption: 'Müəllim' },
+
+                            {
+                                caption: 'Əməliyyat',
+                                width: 120,
+                                cellTemplate: (container, options) => {
+                                    const row = options.data;
+
+                                   $('<button>')
+                                        .addClass('btn btn-xs btn-outline-primary me-1')
+                                        .html('<i class="fa-solid fa-pen fa-fw"></i>')
+                                        .attr('title', 'Redaktə et')
+                                        .on('click', () => Model.openEdit(row))
+                                        .appendTo(container);
+                                    $('<button>')
+                                        .addClass('btn btn-xs btn-outline-danger')
+                                        .html('<i class="fa-solid fa-trash fa-fw"></i>')
+                                        .attr('title', 'Sil')
+                                        .on('click', () => Model.openDelete(row))
+                                        .appendTo(container);
+                                }
+                            }
+                        ]
+                    });
+                },
+
+                openCreate() {
+                    this.createForm = {
+                        courseCode: '',
+                        courseName: '',
+                        gradeLevel: null,
+                        teacherFirstName: '',
+                        teacherLastName: ''
+                    };
+                    createModalInst.show();
+                },
+
+                async submitCreate() {
+                    const errors = this.validateForm(this.createForm);
+                      if (errors.length > 0) {
+                          errors.forEach(e => notify('error', e));
+                          return;
+                      }
+
+                    this.loading = true;
+
+                    try {
+                         const r = await axios.post('@Url.Action("Create", "Course")', this.createForm, {
+                             headers: {
+                                 'Content-Type': 'application/json'
+                             }
+                         });
+
+                        if (r.data.isSuccess) {
+                            notify('success', 'Yaradıldı');
+                            createModalInst.hide();
+                            await this.refresh();
+                        } else r.data.errors.forEach(e => notify('error', e));
+
+                    } finally { this.loading = false; }
+                },
+
+                openEdit(row) {
+
+                    const fullName = (row.teacherFullName ?? '').trim();
+                    const parts = fullName.split(' ');
+
+                    this.editForm = {
+                            id: row.id,
+                            courseCode: row.courseCode,
+                            courseName: row.courseName,
+                            gradeLevel: row.gradeLevel,
+
+                            teacherFirstName: parts[0] ?? '',
+                            teacherLastName: parts.slice(1).join(' ') ?? ''
+                    };
+
+                    editModalInst.show();
+                },
+
+                async submitEdit() {
+                    const errors = this.validateForm(this.editForm);
+                    if (errors.length > 0) {
+                        errors.forEach(e => notify('error', e));
+                        return;
+                    }
+
+                    this.loading = true;
+
+                    try {
+                        const r = await axios.put(
+                            `/Course/update/${this.editForm.id}`,
+                            this.editForm
+                        );
+
+                        if (r.data.isSuccess) {
+                            notify('success', 'Yeniləndi');
+                            editModalInst.hide();
+                            await this.refresh();
+                        } else r.data.errors.forEach(e => notify('error', e));
+
+                    } finally { this.loading = false; }
+                },
+
+                openDelete(row) {
+                    this.deleteTarget = {
+                        id: row.id,
+                        courseName: row.courseName
+                    };
+                    deleteModalInst.show();
+                },
+
+                async submitDelete() {
+                    this.loading = true;
+                    try {
+                        const r = await axios.delete(`/Course/delete/${this.deleteTarget.id}`);
+
+                        if (r.data.isSuccess) {
+                            notify('success', 'Silindi');
+                            deleteModalInst.hide();
+                            await this.refresh();
+                        } else r.data.errors.forEach(e => notify('error', e));
+
+                    } finally { this.loading = false; }
+                },
+
+                async refresh() {
+                    const r = await axios.get('@Url.Action("GetCoursesJson", "Course")');
+                    $('#coursesGrid').dxDataGrid('instance')
+                        .option('dataSource', r.data.data.value.courses);
+                },
+
+                validateForm(form) {
+                    const errors = [];
+
+                    const rules = [
+                        { check: !form.courseCode || form.courseCode.trim().length !== 3, msg: "Dərsin kodu 3 simvol olmalıdır." },
+                        { check: !form.courseName || form.courseName.trim().length < 3, msg: "Dərsin adı ən az 3 simvol olmalıdır." },
+                        { check: !form.gradeLevel || form.gradeLevel < 1 || form.gradeLevel > 11, msg: "Sinif 1-11 arası olmalıdır." },
+                        { check: !form.teacherFirstName || form.teacherFirstName.trim().length < 2, msg: "Müəllim adı ən az 2 simvol olmalıdır." },
+                        { check: !form.teacherLastName || form.teacherLastName.trim().length < 2, msg: "Müəllim soyadı ən az 2 simvol olmalıdır." }
+                    ];
+
+                    rules.forEach(rule => {
+                        if (rule.check) errors.push(rule.msg);
+                    });
+
+                    return errors;
+                    },
+                }
+            });
+    </script>
+}

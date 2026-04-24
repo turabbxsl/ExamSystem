@@ -1,0 +1,116 @@
+﻿<!DOCTYPE html>
+<html lang="az">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - ExamSystem</title>
+
+    <link rel="stylesheet" href="~/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/vue-select.css" />
+    <link rel="stylesheet" href="~/css/toastr.min.css" />
+    <link rel="stylesheet" href="~/css/sweetalert2.min.css" />
+
+    <link rel="stylesheet" href="~/master/css/dx.common.css" />
+    <link rel="stylesheet" href="~/master/css/dx.light.min.css" />
+
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+    <style>
+        [v-cloak] {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav id="sidebar">
+        <div class="sidebar-brand">
+            <i class="fa-solid fa-graduation-cap"></i>
+            <span class="sidebar-label">İmtahan Sistemi</span>
+        </div>
+
+        <ul class="sidebar-nav">
+            <li class="nav-item">
+                <a class="nav-link @(ViewContext.IsActive("Home", "Index"))" asp-controller="Home" asp-action="Index">
+                    <i class="fa-solid fa-house"></i>
+                    <span class="sidebar-label">Ana səhifə</span>
+                </a>
+            </li>
+
+            <li class="nav-group">
+                <button class="nav-group-toggle @(ViewContext.GroupIsActive("Course", "Student", "Exam"))"
+                        data-bs-toggle="collapse" data-bs-target="#menuRegistration">
+                    <i class="fa-solid fa-folder-open"></i>
+                    <span class="sidebar-label">Qeydiyyat</span>
+                    <i class="fa-solid fa-chevron-down ms-auto"></i>
+                </button>
+
+                <div class="collapse @(ViewContext.GroupIsActive("Course", "Student", "Exam") == "active" ? "show" : "")"
+                     id="menuRegistration">
+                    <ul class="nav-group-items">
+                        <li>
+                            <a class="nav-link sub @(ViewContext.IsActive("Course", "Index"))" asp-controller="Course"
+                               asp-action="Index">Dərslər</a>
+                        </li>
+
+                        <li>
+                            <a class="nav-link sub @(ViewContext.IsActive("Student", "Index"))" asp-controller="Student"
+                               asp-action="Index">Şagirdlər</a>
+                        </li>
+
+                        <li>
+                            <a class="nav-link sub @(ViewContext.IsActive("Exam", "Index"))" asp-controller="Exam"
+                               asp-action="Index">İmtahanlar</a>
+                        </li>
+                    </ul>
+                </div>
+            </li>
+        </ul>
+    </nav>
+
+    <div id="mainWrapper">
+        <header id="topbar">
+            <button id="mobileSidebarToggle" class="d-lg-none btn btn-sm btn-outline-secondary">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+
+            <div class="breadcrumb-container">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a asp-controller="Home" asp-action="Index">Ana səhifə</a>
+                    </li>
+
+                    @if (ViewData["BreadcrumbParent"] != null)
+                    {
+                        <li class="breadcrumb-item">@ViewData["BreadcrumbParent"]</li>
+                    }
+
+                    <li class="breadcrumb-item active">@ViewData["Title"]</li>
+                </ol>
+            </div>
+        </header>
+
+        <main id="pageContent" class="container-fluid">
+            @RenderBody()
+        </main>
+    </div>
+
+    <script src="~/js/jquery-3.7.1.min.js"></script>
+    <script src="~/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/vue.min.js"></script>
+    <script src="~/js/axios.min.js"></script>
+    <script src="~/js/vue-select.js"></script>
+    <script src="~/master/js/dx.all.js"></script>
+    <script src="~/js/toastr.min.js"></script>
+    <script src="~/js/sweetalert211.js"></script>
+
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+
+</html>

@@ -1,0 +1,368 @@
+﻿@{
+    Layout = "_Layout";
+    ViewData["Title"] = "İmtahanlar";
+}
+
+<div class="container-fluid" id="examApp" v-cloak>
+    <div class="row">
+
+        <!-- HEADER -->
+        <div class="col-12">
+            <div class="page-header d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">@ViewData["Title"]</h5>
+                <button class="btn btn-success btn-sm" v-on:click="openCreate">
+                    <i class="fa fa-plus"></i> Əlavə et
+                </button>
+            </div>
+        </div>
+
+        <!-- GRID -->
+        <div class="col-12">
+            <div id="examGrid"></div>
+        </div>
+
+    </div>
+
+    <!-- CREATE MODAL -->
+    <div class="modal fade" id="createModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">İmtahan əlavə et</h5>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+
+                    <!-- COURSE -->
+                    <div class="mb-3">
+                        <label class="form-label">Dərs</label>
+                        <v-select :options="courses"
+                                  label="courseName"
+                                  :reduce="c => c.id"
+                                  v-model="createForm.courseId">
+                        </v-select>
+                    </div>
+
+                    <!-- STUDENT -->
+                    <div class="mb-3">
+                        <label class="form-label">Şagird</label>
+                        <v-select :options="students"
+                                  label="fullName"
+                                  :reduce="s => s.id"
+                                  v-model="createForm.studentId">
+                        </v-select>
+                    </div>
+
+                    <!-- DATE -->
+                    <div class="mb-3">
+                        <label class="form-label">İmtahan tarixi</label>
+                        <input type="date" class="form-control" v-model="createForm.examDate" />
+                    </div>
+
+                    <!-- SCORE -->
+                    <div class="mb-3">
+                        <label class="form-label">Bal</label>
+                        <input type="number" class="form-control"
+                               v-model.number="createForm.score"
+                               min="0" max="100" />
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Ləğv et</button>
+                    <button class="btn btn-success btn-sm" v-on:click="submitCreate" :disabled="loading">
+                        Yadda saxla
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- EDIT MODAL -->
+    <div class="modal fade" id="editModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">İmtahanı redaktə et</h5>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+
+                    <div class="mb-3">
+                        <label class="form-label">Tarix</label>
+                        <input type="date" class="form-control" v-model="editForm.examDate" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Bal</label>
+                        <input type="number" class="form-control"
+                               v-model.number="editForm.score"
+                               min="0" max="100" />
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Ləğv et</button>
+                    <button class="btn btn-primary btn-sm" v-on:click="submitEdit" :disabled="loading">
+                        Yenilə
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- DELETE MODAL -->
+    <div class="modal fade" id="deleteModal">
+        <div class="modal-dialog modal-sm modal-dialog-centered">
+            <div class="modal-content">
+
+                <div class="modal-header border-0">
+                    <h6 class="text-danger">Silinsin?</h6>
+                </div>
+
+                <div class="modal-body">
+                    Bu imtahan silinəcək.
+                </div>
+
+                <div class="modal-footer border-0">
+                    <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Xeyr</button>
+                    <button class="btn btn-danger btn-sm" v-on:click="submitDelete" :disabled="loading">
+                        Bəli
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script>
+        let createModal, editModal, deleteModal;
+
+        Vue.component('v-select', VueSelect.VueSelect);
+
+        var Model = new Vue({
+            el: "#examApp",
+            data: {
+                loading: false,
+
+                exams: [],
+                courses: [],
+                students: [],
+
+                createForm: {
+                    courseId: null,
+                    studentId: null,
+                    examDate: '',
+                    score: 0
+                },
+
+                editForm: {
+                    id: null,
+                    examDate: '',
+                    score: 0
+                },
+
+                deleteId: null
+            },
+
+            mounted() {
+                createModal = new bootstrap.Modal(document.getElementById('createModal'));
+                editModal = new bootstrap.Modal(document.getElementById('editModal'));
+                deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+
+                this.init();
+            },
+
+            methods: {
+
+                async init() {
+                    await this.loadLookups();
+                    await this.loadGrid();
+                },
+
+                async loadLookups() {
+                    // COURSE
+                    const c = await axios.get('/Course/get-all');
+                    this.courses = c.data.data.value.courses;
+
+                    // STUDENT
+                    const s = await axios.get('/Student/get-all');
+                    this.students = s.data.data.value.students;
+                },
+
+                async loadGrid() {
+                    const r = await axios.get('/Exam/get-all');
+
+                    this.exams = r.data.data.value.exams;
+
+                    $('#examGrid').dxDataGrid({
+                        dataSource: this.exams,
+                        keyExpr: "id",
+                        ppaging: { pageSize: 15 },
+                        loadPanel: { enabled: true },
+                        allowColumnResizing: true,
+                        allowColumnReordering: true,
+                        columnAutoWidth: true,
+                        columnResizingMode: 'widget',
+                        hoverStateEnabled: true,
+                        rowAlternationEnabled: true,
+                        pager: {
+                            showPageSizeSelector: true,
+                            allowedPageSizes: [10, 25, 50, 100]
+                        },
+                        filterRow: { visible: true, applyFilter: 'auto' },
+                        headerFilter: { visible: true },
+                        noDataText: 'Məlumat yoxdur',
+                        showBorders: true,
+                        width: '100%',
+
+                        columns: [
+                            { dataField: "courseCode", caption: "Kod" },
+                            { dataField: "courseName", caption: "Dərs" },
+                            { dataField: "studentNumber", caption: "Şagird #" },
+                            { dataField: "studentFullName", caption: "Şagird" },
+                            { dataField: "examDate", caption: "Tarix" },
+                            { dataField: "score", caption: "Bal" },
+
+                            {
+                                caption: "Əməliyyat",
+                                cellTemplate: (container, opt) => {
+
+                                    $('<button>')
+                                        .addClass('btn btn-xs btn-outline-primary me-1')
+                                        .html('<i class="fa-solid fa-pen fa-fw"></i>')
+                                        .attr('title', 'Redaktə et')
+                                        .on('click', () => Model.openEdit(opt.data))
+                                        .appendTo(container);
+                                    $('<button>')
+                                        .addClass('btn btn-xs btn-outline-danger')
+                                        .html('<i class="fa-solid fa-trash fa-fw"></i>')
+                                        .attr('title', 'Sil')
+                                        .on('click', () => Model.openDelete(opt.data.id))
+                                        .appendTo(container);
+                                }
+                            }
+                        ]
+                    });
+                },
+
+                openCreate() {
+                    this.createForm = {
+                        courseId: null,
+                        studentId: null,
+                        examDate: '',
+                        score: 0
+                    };
+                    createModal.show();
+                },
+
+                async submitCreate() {
+
+                    if (!this.createForm.courseId || !this.createForm.studentId) return;
+
+                    const errors = this.validateExamForm(this.createForm);
+                    if (errors.length > 0) {
+                        errors.forEach(e => notify('error', e));
+                        return;
+                    }
+
+                    this.loading = true;
+
+                    try {
+                        const r = await axios.post('/Exam/create', this.createForm);
+
+                        if (r.data.isSuccess) {
+                            createModal.hide();
+                            await this.loadGrid();
+                        }
+
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                openEdit(row) {
+                    this.editForm = {
+                        id: row.id,
+                        examDate: row.examDate,
+                        score: row.score
+                    };
+
+                    editModal.show();
+                },
+
+                async submitEdit() {
+
+                    const errors = this.validateExamForm(this.editForm);
+                    if (errors.length > 0) {
+                        errors.forEach(e => notify('error', e));
+                        return;
+                    }
+
+                    this.loading = true;
+
+                    try {
+                        const r = await axios.put(`/Exam/update/${this.editForm.id}`, this.editForm);
+
+                        if (r.data.isSuccess) {
+                            editModal.hide();
+                            await this.loadGrid();
+                        }
+
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                openDelete(id) {
+                    this.deleteId = id;
+                    deleteModal.show();
+                },
+
+                async submitDelete() {
+                    this.loading = true;
+
+                    try {
+                        const r = await axios.delete(`/Exam/delete/${this.deleteId}`);
+
+                        if (r.data.isSuccess) {
+                            deleteModal.hide();
+                            await this.loadGrid();
+                        }
+
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                validateExamForm(form) {
+                    const errors = [];
+
+                    const rules = [
+                        { check: !form.courseId, msg: "Dərs seçilməlidir." },
+                        { check: !form.studentId, msg: "Şagird seçilməlidir." },
+                        { check: !form.examDate, msg: "İmtahan tarixi daxil edilməlidir." },
+                        { check: form.score === null || form.score < 0 || form.score > 100, msg: "Bal 0-100 arasında olmalıdır." }
+                    ];
+
+                    rules.forEach(rule => {
+                        if (rule.check) errors.push(rule.msg);
+                    });
+
+                    return errors;
+                },
+            }
+        });
+    </script>
+}

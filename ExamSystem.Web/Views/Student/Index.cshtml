@@ -1,0 +1,355 @@
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Şagirdlər";
+}
+
+<div class="container-fluid" id="model" v-cloak>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="page-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">@ViewData["Title"]</h5>
+                <button class="btn btn-sm btn-success" v-on:click="openCreate">
+                    <i class="fa-solid fa-plus fa-fw"></i> Əlavə et
+                </button>
+            </div>
+        </div>
+
+        <div class="col-lg-12 mt-3">
+            <div id="studentsGrid"></div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="createModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fa-solid fa-user-plus fa-fw text-success"></i> Şagird əlavə et
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nömrəsi</label>
+                        <input type="number" class="form-control" v-model.number="createForm.studentNumber"
+                               placeholder="12345" min="1" max="99999" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Adı</label>
+                        <input type="text" class="form-control" v-model="createForm.firstName" placeholder="Ad"
+                               maxlength="30" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Soyadı</label>
+                        <input type="text" class="form-control" v-model="createForm.lastName" placeholder="Soyad"
+                               maxlength="30" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Sinifi</label>
+                        <input type="number" class="form-control" v-model.number="createForm.gradeLevel"
+                               placeholder="1-11" min="1" max="11" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Ləğv et</button>
+                    <button type="button" class="btn btn-sm btn-success" v-on:click="submitCreate" :disabled="loading">
+                        <span v-if="loading" class="spinner-border spinner-border-sm me-1"></span>
+                        Yadda saxla
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- EDIT Modal -->
+    <div class="modal fade" id="editModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fa-solid fa-user-pen fa-fw text-primary"></i> Şagirdi redaktə et
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nömrəsi</label>
+                        <input type="number" class="form-control" v-model.number="editForm.studentNumber" readonly />
+                        <div class="form-text">Nömrə dəyişdirilmir.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Adı</label>
+                        <input type="text" class="form-control" v-model="editForm.firstName" maxlength="30" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Soyadı</label>
+                        <input type="text" class="form-control" v-model="editForm.lastName" maxlength="30" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Sinifi</label>
+                        <input type="number" class="form-control" v-model.number="editForm.gradeLevel" min="1"
+                               max="11" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Ləğv et</button>
+                    <button type="button" class="btn btn-sm btn-primary" v-on:click="submitEdit" :disabled="loading">
+                        <span v-if="loading" class="spinner-border spinner-border-sm me-1"></span>
+                        Yenilə
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DELETE Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title text-danger">
+                        <i class="fa-solid fa-triangle-exclamation fa-fw"></i> Silmək istəyirsiniz?
+                    </h5>
+                </div>
+                <div class="modal-body pt-1">
+                    <span class="fw-semibold">{{ deleteTarget.fullName }}</span> şagirdi silinəcək.
+                    Bu əməliyyat geri qaytarılmır.
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Xeyr</button>
+                    <button type="button" class="btn btn-sm btn-danger" v-on:click="submitDelete" :disabled="loading">
+                        <span v-if="loading" class="spinner-border spinner-border-sm me-1"></span>
+                        Bəli, sil
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var createModalInst, editModalInst, deleteModalInst;
+
+        var Model = new Vue({
+            el: '#model',
+            data: {
+                loading: false,
+
+                students:[],
+
+                createForm: {
+                    studentNumber: null,
+                    firstName: '',
+                    lastName: '',
+                    gradeLevel: null
+                },
+                editForm: {
+                    id: null,
+                    studentNumber: null,
+                    firstName: '',
+                    lastName: '',
+                    gradeLevel: null
+                },
+                deleteTarget: {
+                    id: null,
+                    fullName: ''
+                }
+            },
+            mounted() {
+                createModalInst = new bootstrap.Modal(document.getElementById('createModal'));
+                editModalInst = new bootstrap.Modal(document.getElementById('editModal'));
+                deleteModalInst = new bootstrap.Modal(document.getElementById('deleteModal'));
+                this.loadGrid();
+            },
+            methods: {
+
+                // ── Grid ────────────────────────────────────────────────────
+                async loadGrid() {
+                    const r = await axios.get('@Url.Action("GetAllJson", "Student")');
+
+                    if (!r.data.isSuccess) {
+                        r.data.errors.forEach(e => notify('error', e));
+                        return;
+                    }
+
+                    this.students = this.courses = r.data.data.value.students;
+
+                    $('#studentsGrid').dxDataGrid({
+                        dataSource: this.students,
+                        keyExpr: 'id',
+                        paging: { pageSize: 15 },
+                        loadPanel: { enabled: true },
+                        allowColumnResizing: true,
+                        allowColumnReordering: true,
+                        columnAutoWidth: true,
+                        columnResizingMode: 'widget',
+                        hoverStateEnabled: true,
+                        rowAlternationEnabled: true,
+                        pager: {
+                            showPageSizeSelector: true,
+                            allowedPageSizes: [10, 25, 50, 100]
+                        },
+                        filterRow: { visible: true, applyFilter: 'auto' },
+                        headerFilter: { visible: true },
+                        noDataText: 'Məlumat yoxdur',
+                        showBorders: true,
+                        width: '100%',
+                        columns: [
+                            { dataField: 'studentNumber', caption: 'Nömrə', alignment: 'center', width: 100 },
+                            { dataField: 'firstName', caption: 'Ad', alignment: 'left' },
+                            { dataField: 'lastName', caption: 'Soyad', alignment: 'left' },
+                            { dataField: 'gradeLevel', caption: 'Sinif', alignment: 'center', width: 80 },
+                            {
+                                caption: 'Əməliyyatlar',
+                                alignment: 'center',
+                                width: 110,
+                                allowFiltering: false,
+                                allowSorting: false,
+                                cellTemplate(container, options) {
+                                    const row = options.data;
+                                    $('<button>')
+                                        .addClass('btn btn-xs btn-outline-primary me-1')
+                                        .html('<i class="fa-solid fa-pen fa-fw"></i>')
+                                        .attr('title', 'Redaktə et')
+                                        .on('click', () => Model.openEdit(row))
+                                        .appendTo(container);
+                                    $('<button>')
+                                        .addClass('btn btn-xs btn-outline-danger')
+                                        .html('<i class="fa-solid fa-trash fa-fw"></i>')
+                                        .attr('title', 'Sil')
+                                        .on('click', () => Model.openDelete(row))
+                                        .appendTo(container);
+                                }
+                            }
+                        ]
+                    });
+                },
+
+                async refreshGrid() {
+                    const r = await axios.get('@Url.Action("GetAllJson", "Student")');
+                    if (!r.data.isSuccess) return;
+                    const instance = $('#studentsGrid').dxDataGrid('instance');
+                    instance.option('dataSource', r.data.data.value.students);
+                    instance.refresh();
+                },
+
+                // ── Create ──────────────────────────────────────────────────
+                openCreate() {
+                    this.createForm = { studentNumber: null, firstName: '', lastName: '', gradeLevel: null };
+                    createModalInst.show();
+                },
+
+                async submitCreate() {
+                    const errors = this.validateStudentForm(this.createForm);
+                        if (errors.length > 0) {
+                            errors.forEach(e => notify('error', e));
+                            return;
+                        }
+                    this.loading = true;
+                    try {
+                        console.log('bura girdi');
+                        const r = await axios.post('@Url.Action("Create", "Student")', this.createForm);
+                        if (r.data.isSuccess) {
+                            notify('success', 'Şagird uğurla əlavə edildi.');
+                            createModalInst.hide();
+                            await this.refreshGrid();
+                        } else {
+                            r.data.errors.forEach(e => notify('error', e));
+                        }
+                    } catch {
+                        notify('error', 'Xəta baş verdi.');
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                // ── Edit ────────────────────────────────────────────────────
+                openEdit(row) {
+                    this.editForm = {
+                        id: row.id,
+                        studentNumber: row.studentNumber,
+                        firstName: row.firstName,
+                        lastName: row.lastName,
+                        gradeLevel: row.gradeLevel
+                    };
+                    editModalInst.show();
+                },
+
+                async submitEdit() {
+                    const errors = this.validateStudentForm(this.editForm);
+                    if (errors.length > 0) {
+                        errors.forEach(e => notify('error', e));
+                        return;
+                    }
+
+                    this.loading = true;
+
+                    try {
+                        const r = await axios.put(
+                            '@Url.Action("Update", "Student")/' + this.editForm.id,
+                            this.editForm
+                        );
+                        if (r.data.isSuccess) {
+                            notify('success', 'Şagird uğurla yeniləndi.');
+                            editModalInst.hide();
+                            await this.refreshGrid();
+                        } else {
+                            r.data.errors.forEach(e => notify('error', e));
+                        }
+                    } catch {
+                        notify('error', 'Xəta baş verdi.');
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                // ── Delete ──────────────────────────────────────────────────
+                openDelete(row) {
+                    this.deleteTarget = {
+                        id: row.id,
+                        fullName: row.firstName + ' ' + row.lastName
+                    };
+                    deleteModalInst.show();
+                },
+
+                async submitDelete() {
+                    this.loading = true;
+                    try {
+                        const r = await axios.delete(
+                            '@Url.Action("Delete", "Student")/' + this.deleteTarget.id
+                        );
+                        if (r.data.isSuccess) {
+                            notify('success', 'Şagird silindi.');
+                            deleteModalInst.hide();
+                            await this.refreshGrid();
+                        } else {
+                            r.data.errors.forEach(e => notify('error', e));
+                        }
+                    } catch {
+                        notify('error', 'Xəta baş verdi.');
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                  validateStudentForm(form) {
+                   const errors = [];
+
+                   const rules = [
+                       { check: !form.studentNumber || form.studentNumber < 1, msg: "Nömrə düzgün deyil." },
+                       { check: !form.firstName || form.firstName.trim().length < 2, msg: "Ad ən az 2 simvol olmalıdır." },
+                       { check: !form.lastName || form.lastName.trim().length < 2, msg: "Soyad ən az 2 simvol olmalıdır." },
+                       { check: !form.gradeLevel || form.gradeLevel < 1 || form.gradeLevel > 11, msg: "Sinif 1-11 arası olmalıdır." }
+                   ];
+
+                   rules.forEach(rule => {
+                       if (rule.check) errors.push(rule.msg);
+                   });
+
+                   return errors;
+                },
+            }
+        });
+    </script>
+}

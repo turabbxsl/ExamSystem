@@ -1,0 +1,36 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "API Debug",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "dotnet",
+      "args": [
+        "run",
+        "--project",
+        "${workspaceFolder}/ExamSystem.API/ExamSystem.API.csproj"
+      ],
+      "cwd": "${workspaceFolder}/ExamSystem.API"
+    },
+    {
+      "name": "Web Debug",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "dotnet",
+      "args": [
+        "run",
+        "--project",
+        "${workspaceFolder}/ExamSystem.Web/ExamSystem.Web.csproj"
+      ],
+      "cwd": "${workspaceFolder}/ExamSystem.Web"
+    }
+  ],
+
+  "compounds": [
+    {
+      "name": "Full Debug (API + Web)",
+      "configurations": ["API Debug", "Web Debug"]
+    }
+  ]
+}
