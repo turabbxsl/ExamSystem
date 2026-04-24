@@ -1,5 +1,3 @@
-
-
 namespace ExamSystem.Application.Services;
 
 public class StudentService(IUnitOfWork unitOfWork)
@@ -50,7 +48,6 @@ public class StudentService(IUnitOfWork unitOfWork)
                 return Result<StudentDto>.NotFound($"Student not found. Id: {id}");
             }
 
-            // Nömrə dəyişimi üçün yoxlama
             if (student.StudentNumber != dto.StudentNumber)
             {
                 var exists = await Repository.FindAsync(s => s.StudentNumber == dto.StudentNumber);

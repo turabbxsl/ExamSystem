@@ -29,6 +29,8 @@ app.UseCors("AllowWebApp");
 
 app.UseApiFeatures();
 
+
+// 2. Endpoint Mapping
 app.MapExamEndpoints();
 app.MapCourseEndpoints();
 app.MapStudentEndpoints();

@@ -24,7 +24,7 @@ public class CourseApiClient(HttpClient http, ILogger<CourseApiClient> logger)
         }
         catch (HttpRequestException ex)
         {
-            logger.LogError(ex, "GetAll courses xəta");
+            logger.LogError(ex, "GetAll courses error");
             return Result<IEnumerable<CourseDto>>.Failure(ex.Message, (int)(ex.StatusCode ?? HttpStatusCode.ServiceUnavailable));
         }
     }
@@ -35,7 +35,7 @@ public class CourseApiClient(HttpClient http, ILogger<CourseApiClient> logger)
         {
             var response = await http.GetAsync($"{Base}/{id}");
             if (response.StatusCode == HttpStatusCode.NotFound)
-                return Result<CourseDto>.Failure("Dərs tapılmadı", 404);
+                return Result<CourseDto>.Failure("Course not found", 404);
 
             response.EnsureSuccessStatusCode();
             var data = await response.Content.ReadFromJsonAsync<CourseDto>();
@@ -43,7 +43,7 @@ public class CourseApiClient(HttpClient http, ILogger<CourseApiClient> logger)
         }
         catch (HttpRequestException ex)
         {
-            logger.LogError(ex, "GetById course xəta. Id:{Id}", id);
+            logger.LogError(ex, "GetById course error. Id:{Id}", id);
             return Result<CourseDto>.Failure(ex.Message, (int)(ex.StatusCode ?? HttpStatusCode.ServiceUnavailable));
         }
     }
@@ -59,7 +59,7 @@ public class CourseApiClient(HttpClient http, ILogger<CourseApiClient> logger)
         }
         catch (HttpRequestException ex)
         {
-            logger.LogError(ex, "Create course xəta");
+            logger.LogError(ex, "Create course error");
             return Result<CourseDto>.Failure(ex.Message, (int)(ex.StatusCode ?? HttpStatusCode.ServiceUnavailable));
         }
     }
@@ -70,7 +70,7 @@ public class CourseApiClient(HttpClient http, ILogger<CourseApiClient> logger)
         {
             var response = await http.PutAsJsonAsync($"{Base}/{id}", dto);
             if (response.StatusCode == HttpStatusCode.NotFound)
-                return Result<CourseDto>.Failure("Dərs tapılmadı", 404);
+                return Result<CourseDto>.Failure("Course not found", 404);
 
             response.EnsureSuccessStatusCode();
             var data = await response.Content.ReadFromJsonAsync<CourseDto>();
@@ -78,7 +78,7 @@ public class CourseApiClient(HttpClient http, ILogger<CourseApiClient> logger)
         }
         catch (HttpRequestException ex)
         {
-            logger.LogError(ex, "Update course xəta. Id:{Id}", id);
+            logger.LogError(ex, "Update course error. Id:{Id}", id);
             return Result<CourseDto>.Failure(ex.Message, (int)(ex.StatusCode ?? HttpStatusCode.ServiceUnavailable));
         }
     }
@@ -89,14 +89,14 @@ public class CourseApiClient(HttpClient http, ILogger<CourseApiClient> logger)
         {
             var response = await http.DeleteAsync($"{Base}/{id}");
             if (response.StatusCode == HttpStatusCode.NotFound)
-                return Result<bool>.Failure("Dərs tapılmadı", 404);
+                return Result<bool>.Failure("Course not found", 404);
 
             response.EnsureSuccessStatusCode();
             return Result<bool>.Success(true);
         }
         catch (HttpRequestException ex)
         {
-            logger.LogError(ex, "Delete course xəta. Id:{Id}", id);
+            logger.LogError(ex, "Delete course error. Id:{Id}", id);
             return Result<bool>.Failure(ex.Message, (int)(ex.StatusCode ?? HttpStatusCode.ServiceUnavailable));
         }
     }

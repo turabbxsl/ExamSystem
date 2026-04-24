@@ -33,19 +33,4 @@ public class UnitOfWork(AppDbContext context) : IUnitOfWork
 
     public async Task<int> SaveChangesAsync() => await context.SaveChangesAsync();
     public void Dispose() => context.Dispose();
-
-    /*private IGenericRepository<Course>? _courses;
-    private IGenericRepository<Student>? _students;
-    private IGenericRepository<Exam>? _exams;
-
-
-    public IGenericRepository<Course> Courses => _courses ??= new GenericRepository<Course>(context);
-    public IGenericRepository<Student> Students => _students ??= new GenericRepository<Student>(context);
-    public IGenericRepository<Exam> Exams => _exams ??= new GenericRepository<Exam>(context);
-
-
-    public void Dispose() => context.Dispose();
-
-    public Task<int> SaveChangesAsync() => context.SaveChangesAsync();
-    */
 }

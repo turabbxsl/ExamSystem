@@ -6,7 +6,6 @@
 <div class="container-fluid" id="examApp" v-cloak>
     <div class="row">
 
-        <!-- HEADER -->
         <div class="col-12">
             <div class="page-header d-flex justify-content-between align-items-center mb-3">
                 <h5 class="mb-0">@ViewData["Title"]</h5>
@@ -16,14 +15,13 @@
             </div>
         </div>
 
-        <!-- GRID -->
         <div class="col-12">
             <div id="examGrid"></div>
         </div>
 
     </div>
 
-    <!-- CREATE MODAL -->
+    <!-- Create Modal -->
     <div class="modal fade" id="createModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -35,7 +33,6 @@
 
                 <div class="modal-body">
 
-                    <!-- COURSE -->
                     <div class="mb-3">
                         <label class="form-label">Dərs</label>
                         <v-select :options="courses"
@@ -45,7 +42,6 @@
                         </v-select>
                     </div>
 
-                    <!-- STUDENT -->
                     <div class="mb-3">
                         <label class="form-label">Şagird</label>
                         <v-select :options="students"
@@ -55,13 +51,11 @@
                         </v-select>
                     </div>
 
-                    <!-- DATE -->
                     <div class="mb-3">
                         <label class="form-label">İmtahan tarixi</label>
                         <input type="date" class="form-control" v-model="createForm.examDate" />
                     </div>
 
-                    <!-- SCORE -->
                     <div class="mb-3">
                         <label class="form-label">Bal</label>
                         <input type="number" class="form-control"
@@ -82,7 +76,7 @@
         </div>
     </div>
 
-    <!-- EDIT MODAL -->
+    <!-- Edit Modal -->
     <div class="modal fade" id="editModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -119,7 +113,7 @@
         </div>
     </div>
 
-    <!-- DELETE MODAL -->
+    <!-- Delete Modal -->
     <div class="modal fade" id="deleteModal">
         <div class="modal-dialog modal-sm modal-dialog-centered">
             <div class="modal-content">
@@ -192,11 +186,11 @@
                 },
 
                 async loadLookups() {
-                    // COURSE
+                    // Courses
                     const c = await axios.get('/Course/get-all');
                     this.courses = c.data.data.value.courses;
 
-                    // STUDENT
+                    // Students
                     const s = await axios.get('/Student/get-all');
                     this.students = s.data.data.value.students;
                 },

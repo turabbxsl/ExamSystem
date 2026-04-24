@@ -19,7 +19,7 @@ public sealed class CreateExamViewModel
     public DateOnly ExamDate { get; set; } = DateOnly.FromDateTime(DateTime.Today);
     public byte Score { get; set; }
 
-    // Dropdown-lar üçün
+    // For dropdown lists in the view
     public SelectList? CourseSelectList { get; set; }
     public SelectList? StudentSelectList { get; set; }
 }
