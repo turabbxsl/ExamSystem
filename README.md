@@ -12,8 +12,9 @@ ExamSystem is a backend-focused system built on .NET 10, designed to manage exam
 
 ## Key Architectural Features
 
-* **Audit Interceptor:** Implements `ISaveChangesInterceptor` to automatically manage `CreatedAt` and `UpdatedAt` timestamps for all entities, ensuring database consistency without manual boilerplate code.
+* **Interceptor Pattern:** Centralizes cross-cutting concerns like auditing (`ISaveChangesInterceptor`) without polluting domain entities.
 * **Transaction Management:** Centralized transaction handling using a `BaseService` wrapper and `UnitOfWork` pattern to ensure atomic operations and data integrity.
+* **Result Pattern:** Avoids throwing exceptions for control flow by returning a standard `Result<T>` object for success/failure states.
 * **Clean Architecture:** Strict separation between Core, Application, and Infrastructure layers.
 
 ## Quick Start
