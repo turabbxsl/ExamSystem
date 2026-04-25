@@ -31,3 +31,5 @@ Dashboard URL:
 ```bash
 http://localhost:5246/dashboard
 ```
+<img width="1892" height="943" alt="Screenshot 2026-04-25 172611" src="https://github.com/user-attachments/assets/f7ea0d16-fb78-49bb-81c0-55e9fff60f3b" />
+
