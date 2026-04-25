@@ -5,8 +5,7 @@ public sealed class CourseController(ICourseService _service) : BaseController
 {
 
     [HttpGet("")]
-    public async Task<IActionResult> Index() =>
-        await ExecuteViewAsync(() => _service.GetCoursesAsync());
+    public async Task<IActionResult> Index() => await ExecuteViewAsync(() => _service.GetCoursesAsync());
 
 
     [HttpGet("get-all")]

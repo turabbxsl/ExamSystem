@@ -48,6 +48,39 @@ public abstract class BaseService<TEntity, TDto>(IUnitOfWork unitOfWork) : IBase
         }
     }
 
+    protected async Task<Result<TResult>> ExecuteTransactionAsync<TResult>(Func<Task<Result<TResult>>> action)
+    {
+        await _unitOfWork.BeginTransactionAsync();
+        try
+        {
+            var result = await action();
+            if (result.IsSuccess)
+                await _unitOfWork.CommitTransactionAsync();
+            else
+                await _unitOfWork.RollbackTransactionAsync();
+
+            return result;
+        }
+        catch (Exception)
+        {
+            await _unitOfWork.RollbackTransactionAsync();
+            return Result<TResult>.Failure("An unexpected error occurred.");
+        }
+    }
+
+    protected async Task<Result<T>> RollbackFailure<T>(string message)
+    {
+        await _unitOfWork.RollbackTransactionAsync();
+        return Result<T>.Failure(message);
+    }
+
+    protected async Task<Result<T>> RollbackNotFound<T>(string message)
+    {
+        await _unitOfWork.RollbackTransactionAsync();
+        return Result<T>.NotFound(message);
+    }
+
+
     protected abstract TDto MapToDto(TEntity entity);
     protected abstract IEnumerable<TDto> MapToDtoList(IEnumerable<TEntity> entities);
 }

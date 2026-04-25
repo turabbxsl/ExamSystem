@@ -22,7 +22,7 @@ services:
       - "8080:8080"
     environment:
       - Database__ConnectionString=Server=sqlserver;Database=ExamSystemDb;User Id=sa;Password=Password123!QW;TrustServerCertificate=True;
-      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=Docker
     depends_on:
       sqlserver:
         condition: service_started
@@ -33,25 +33,16 @@ services:
     build:
       context: .
       dockerfile: ExamSystem.Web/Dockerfile
-
     container_name: exam_system_web
-
-    volumes:
-      - ./ExamSystem.Web:/src/ExamSystem.Web
-
-    working_dir: /src/ExamSystem.Web
-
-    command: dotnet watch run --urls http://0.0.0.0:8080
-
     ports:
       - "5246:8080"
-
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ApiOptions__BaseUrl=http://exam_system_api:8080
-
+      - ASPNETCORE_ENVIRONMENT=Production
+      - Api__BaseUrl=http://exam_system_api:8080
     depends_on:
       - api
+    networks:
+        - exam-network
 
 networks:
   exam-network:

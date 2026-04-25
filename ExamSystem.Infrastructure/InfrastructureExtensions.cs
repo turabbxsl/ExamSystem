@@ -1,3 +1,4 @@
+using ExamSystem.Infrastructure.Interceptors;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,6 +12,8 @@ public static class InfrastructureExtensions
         services.AddDbContext<AppDbContext>(opt =>
         {
             opt.UseSqlServer(dbOptions.ConnectionString);
+
+            opt.AddInterceptors(new AuditInterceptor());
 
             if (dbOptions.EnableSensitiveDataLogging)
                 opt.EnableSensitiveDataLogging();

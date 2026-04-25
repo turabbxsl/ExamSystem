@@ -4,8 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 public sealed class StudentController(IStudentService _service) : BaseController
 {
     [HttpGet("")]
-    public async Task<IActionResult> Index() =>
-        await ExecuteViewAsync(() => _service.GetStudentsAsync());
+    public async Task<IActionResult> Index() => await ExecuteViewAsync(() => _service.GetStudentsAsync());
 
     [HttpGet("details/{id}")]
     public async Task<IActionResult> Details(int id) =>

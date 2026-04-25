@@ -5,8 +5,7 @@ public sealed class ExamController(IExamService _service) : BaseController
 {
 
     [HttpGet("")]
-    public async Task<IActionResult> Index() =>
-        await ExecuteViewAsync(() => _service.GetExamsAsync());
+    public async Task<IActionResult> Index() => await ExecuteViewAsync(() => _service.GetExamsAsync());
 
     [HttpGet("details/{id}")]
     public async Task<IActionResult> Details(int id) =>

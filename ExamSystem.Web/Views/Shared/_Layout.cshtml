@@ -35,7 +35,7 @@
 
         <ul class="sidebar-nav">
             <li class="nav-item">
-                <a class="nav-link @(ViewContext.IsActive("Home", "Index"))" asp-controller="Home" asp-action="Index">
+                <a class="nav-link @(ViewContext.IsActive("Dashboard", "Index"))" asp-controller="Dashboard" asp-action="Index">
                     <i class="fa-solid fa-house"></i>
                     <span class="sidebar-label">Ana səhifə</span>
                 </a>
@@ -81,7 +81,7 @@
             <div class="breadcrumb-container">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item">
-                        <a asp-controller="Home" asp-action="Index">Ana səhifə</a>
+                        <a asp-controller="Dashboard" asp-action="Index">Ana səhifə</a>
                     </li>
 
                     @if (ViewData["BreadcrumbParent"] != null)
