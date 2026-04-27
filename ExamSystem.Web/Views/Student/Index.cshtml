@@ -339,9 +339,9 @@
                    const errors = [];
 
                    const rules = [
-                       { check: !form.studentNumber || form.studentNumber < 1, msg: "Nömrə düzgün deyil." },
-                       { check: !form.firstName || form.firstName.trim().length < 2, msg: "Ad ən az 2 simvol olmalıdır." },
-                       { check: !form.lastName || form.lastName.trim().length < 2, msg: "Soyad ən az 2 simvol olmalıdır." },
+                       { check: !form.studentNumber || form.studentNumber < 1 || form.studentNumber > 99999, msg: "Şagird nömrəsi 1 ilə 99999 arası olmalıdır." },
+                       { check: !form.firstName || form.firstName.trim().length < 2 || form.firstName.trim().length > 30, msg: "Ad 2 ilə 30 simvol arası olmalıdır." },
+                       { check: !form.lastName || form.lastName.trim().length < 2 || form.lastName.trim().length > 30, msg: "Soyad 2 ilə 30 simvol arası olmalıdır." },
                        { check: !form.gradeLevel || form.gradeLevel < 1 || form.gradeLevel > 11, msg: "Sinif 1-11 arası olmalıdır." }
                    ];
 
