@@ -277,6 +277,7 @@
                         const r = await axios.post('/Exam/create', this.createForm);
 
                         if (r.data.isSuccess) {
+                            notify('success', 'Imtahan uğurla yaradıldı.');
                             createModal.hide();
                             await this.loadGrid();
                         }
@@ -310,6 +311,7 @@
                         const r = await axios.put(`/Exam/update/${this.editForm.id}`, this.editForm);
 
                         if (r.data.isSuccess) {
+                            notify('success', 'Imtahan yeniləndi.');
                             editModal.hide();
                             await this.loadGrid();
                         }
