@@ -1,6 +1,6 @@
-# ExamSystem
+# Exam System
 
-ExamSystem is a backend-focused system built on .NET 10, designed to manage exams, courses, and student records. The project follows Clean Architecture principles, ensuring a clear separation of concerns, high maintainability, and testability.
+Exam System is a backend-focused system built on .NET 10, designed to manage exams, courses, and student records. The project follows Clean Architecture principles, ensuring a clear separation of concerns, high maintainability, and testability.
 
 ## Technology Stack
 
