@@ -263,9 +263,9 @@
 
                 async submitCreate() {
 
-                    if (!this.createForm.courseId || !this.createForm.studentId) return;
+                    //if (!this.createForm.courseId || !this.createForm.studentId) return;
 
-                    const errors = this.validateExamForm(this.createForm);
+                    const errors = this.validateExamForm(this.createForm, false);
                     if (errors.length > 0) {
                         errors.forEach(e => notify('error', e));
                         return;
@@ -298,7 +298,7 @@
 
                 async submitEdit() {
 
-                    const errors = this.validateExamForm(this.editForm);
+                    const errors = this.validateExamForm(this.editForm, true);
                     if (errors.length > 0) {
                         errors.forEach(e => notify('error', e));
                         return;
@@ -339,23 +339,27 @@
                         this.loading = false;
                     }
                 },
-
-                validateExamForm(form) {
+                    validateExamForm(form, isEdit = false) {
                     const errors = [];
 
-                    const rules = [
-                        { check: !form.courseId, msg: "Dərs seçilməlidir." },
-                        { check: !form.studentId, msg: "Şagird seçilməlidir." },
-                        { check: !form.examDate, msg: "İmtahan tarixi daxil edilməlidir." },
-                        { check: form.score === null || form.score < 0 || form.score > 9, msg: "Bal 0-9 arasında olmalıdır." }
-                    ];
+                    const rules = isEdit
+                        ? [
+                            { check: !form.examDate, msg: "İmtahan tarixi daxil edilməlidir." },
+                            { check: form.score === null || form.score < 0 || form.score > 9, msg: "Bal 0-9 arasında olmalıdır." }
+                        ]
+                        : [
+                            { check: !form.courseId, msg: "Dərs seçilməlidir." },
+                            { check: !form.studentId, msg: "Şagird seçilməlidir." },
+                            { check: !form.examDate, msg: "İmtahan tarixi daxil edilməlidir." },
+                            { check: form.score === null || form.score < 0 || form.score > 9, msg: "Bal 0-9 arasında olmalıdır." }
+                        ];
 
                     rules.forEach(rule => {
                         if (rule.check) errors.push(rule.msg);
                     });
 
                     return errors;
-                },
+                }
             }
         });
     </script>
