@@ -60,7 +60,7 @@
                         <label class="form-label">Bal</label>
                         <input type="number" class="form-control"
                                v-model.number="createForm.score"
-                               min="0" max="100" />
+                               min="0" max="9" />
                     </div>
 
                 </div>
@@ -97,7 +97,7 @@
                         <label class="form-label">Bal</label>
                         <input type="number" class="form-control"
                                v-model.number="editForm.score"
-                               min="0" max="100" />
+                               min="0" max="9" />
                     </div>
 
                 </div>
@@ -347,7 +347,7 @@
                         { check: !form.courseId, msg: "Dərs seçilməlidir." },
                         { check: !form.studentId, msg: "Şagird seçilməlidir." },
                         { check: !form.examDate, msg: "İmtahan tarixi daxil edilməlidir." },
-                        { check: form.score === null || form.score < 0 || form.score > 100, msg: "Bal 0-100 arasında olmalıdır." }
+                        { check: form.score === null || form.score < 0 || form.score > 9, msg: "Bal 0-9 arasında olmalıdır." }
                     ];
 
                     rules.forEach(rule => {
